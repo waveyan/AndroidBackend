@@ -1,3 +1,11 @@
 from django.contrib import admin
 
-# Register your models here.
+from hotspotapp.models import HotSpot
+
+
+class HotspotAdmin(admin.ModelAdmin):
+    list_display = ['name', 'city']
+    # list_filter=['created_time']
+
+
+admin.site.register(HotSpot, HotspotAdmin)

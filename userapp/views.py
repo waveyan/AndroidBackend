@@ -3,7 +3,7 @@ from django.views.generic.base import View
 from django.http import HttpResponse
 from userapp.models import User
 
-from .utils import message,make_security
+from androidbackend.utils import message,make_security
 
 
 class Login(View):
