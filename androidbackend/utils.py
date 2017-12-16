@@ -10,7 +10,7 @@ def message(**kwargs):
     access_token=kwargs.get('access_token','')
     if access_token:
         msg['access_token']=access_token
-    return json.dumps(msg)
+    return msg
 
 def make_security(data):
     return md5(data).hexdigest()
