@@ -4,7 +4,7 @@ from userapp.models import User
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['name', 'telephone']
+    list_display = ['id', 'name', 'telephone']
     # list_filter=['created_time']
 
 
