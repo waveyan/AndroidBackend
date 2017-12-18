@@ -14,6 +14,8 @@ class HotSpot(models.Model):
     pic3_text = models.CharField('图三解说', max_length=200, default='', null=True)
     content = models.TextField("内容", max_length=1000)
     address = models.CharField("详细地址", max_length=200)
+    url = models.CharField('网址', max_length=200, default='', null=True)
+    telephone = models.CharField('联系电话', max_length=30, null=True)
     likes = models.IntegerField("点赞数", default=0)
     type = models.CharField('类型', max_length=50)
     arrived = models.IntegerField('签到数', default=0)
@@ -38,6 +40,8 @@ class HotSpot(models.Model):
         hs['like'] = self.likes
         hs['type'] = self.type
         hs['arrived'] = self.arrived
+        hs['telephone'] = self.telephone
+        hs['url'] = self.url
         return hs
 
     # def tojson_all(self):

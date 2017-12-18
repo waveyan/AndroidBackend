@@ -1,6 +1,7 @@
 from django.db.utils import IntegrityError
 from django.views.generic.base import View
 from django.http import JsonResponse, QueryDict
+from django.views.decorators.http import require_http_methods
 
 from userapp.models import User
 from androidbackend.utils import message, make_security
@@ -10,45 +11,8 @@ from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
 import os
 
 
-# class Login(View):
-#    def post(self,request):
-#        telephone = request.POST.get("telephone", "")
-#        password = request.POST.get("password", "")
-#        if not(telephone or password or telephone):
-#            msg=message(msg='登录信息不全！')
-#            return JsonResponse(msg,content_type='application/json')
-#        password=make_security(password.encode('utf8'))
-#        user=User.objects.filter(telephone=telephone,password=password).first()
-#        if user:
-#            msg = message(msg='登录成功', status='success', access_token=user.access_token)
-#            return JsonResponse(msg, content_type='application/json')
-#        else:
-#            msg = message(msg='账户或密码错误')
-#            return  JsonResponse(msg, content_type='application/json')
-#
-#
-# class Register(View):
-#    def post(self,request):
-#        name=request.POST.get('name','')
-#        password=request.POST.get('password','')
-#        telephone=request.POST.get('telephone','')
-#        if not(name or password or telephone):
-#            msg=message(msg='注册信息不全！')
-#            return JsonResponse(msg,content_type='application/json')
-#        password=make_security(password.encode('utf8'))
-#        access_token=make_security((name+password).encode('utf8'))
-#        user=User(name=name,password=password,telephone=telephone,access_token=access_token)
-#        try:
-#            user.save()
-#        except IntegrityError as ie:
-#            print(ie)
-#            msg=message(msg='手机重复')
-#            return JsonResponse(msg)
-#        msg=message(msg='注册成功',status='success')
-#        return JsonResponse(msg,content_type='application/json')
-
 class UserManager(View):
-    #
+    # detail
     def get(self, request):
         access_token = request.META.get(ACCESS_TOKEN, '')
         if access_token:
@@ -133,6 +97,26 @@ class UserManager(View):
                 user.following.add(follow_user)
                 msg = message(msg='关注成功！', status='success')
         return JsonResponse(msg)
+
+
+# 粉丝和关注列表
+@require_http_methods(['POST'])
+def get_my_follow(request):
+    access_token = request.META.get(ACCESS_TOKEN)
+    user = User.objects.filter(access_token=access_token).first()
+    from collections import defaultdict
+    follow = defaultdict(lambda: [])
+    for fans in user.following.all():
+        f = {}
+        f['name'] = fans.name
+        f['pic'] = str(fans.pic)
+        follow['following'].append(f)
+    for follower in user.follower.all():
+        f = {}
+        f['name'] = follower.name
+        f['pic'] = str(follower.pic)
+        follow['follower'].append(f)
+    return JsonResponse(follow)
 
 
 def handle_uploaded_file(f, path):
