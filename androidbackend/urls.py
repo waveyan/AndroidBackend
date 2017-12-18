@@ -22,6 +22,6 @@ from androidbackend.settings import MEDIA_ROOT
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('userapp.urls')),
+    path('hotspot/', include('hotspotapp.urls')),
     url(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT}),
-
 ]

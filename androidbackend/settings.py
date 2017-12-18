@@ -80,7 +80,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'androidbackend',
         'USER': 'root',
-        # 'PASSWORD':'mysql',
+        'PASSWORD': 'mysql',
         'CHARSET': 'utf8'
     }
 }
@@ -123,4 +123,4 @@ STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-ACCESS_TOKEN='HTTP_ACCESS_TOKEN'
+ACCESS_TOKEN = 'HTTP_ACCESS_TOKEN'
