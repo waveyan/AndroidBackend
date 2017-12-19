@@ -7,6 +7,7 @@ from userapp.models import User
 from androidbackend.utils import message, make_security
 from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
 # from userapp.forms import UserForm
+from hotspotapp.models import HotSpot
 
 import os
 
@@ -77,25 +78,46 @@ class UserManager(View):
         msg = message(msg='请求信息不全！')
         return JsonResponse(msg)
 
-    # 关注
+    # 关注 and 收藏
     def put(self, request):
-        follow_id = QueryDict(request.body).get('follow_id')
+        body = QueryDict(request.body)
+        msg=message(msg='操作失败！')
+        action=body.get('action')
         access_token = request.META.get(ACCESS_TOKEN, '')
-        msg = message(msg='操作失败')
-        if access_token and follow_id:
-            follow_user = User.objects.filter(pk=follow_id).first()
-            user = User.objects.filter(access_token=access_token).first()
-            is_following = False
-            for x in user.following.all():
-                if x.telephone == follow_user.telephone:
-                    is_following = True
-                    break
-            if is_following:
-                user.following.remove(follow_user)
-                msg = message(msg='取关成功！', status='success')
-            else:
-                user.following.add(follow_user)
-                msg = message(msg='关注成功！', status='success')
+        if action=='follow':
+            follow_id = body.get('follow_id')
+            msg = message(msg='操作失败')
+            if access_token and follow_id:
+                follow_user = User.objects.filter(pk=follow_id).first()
+                user = User.objects.filter(access_token=access_token).first()
+                is_following = False
+                for x in user.following.all():
+                    if x.telephone == follow_user.telephone:
+                        is_following = True
+                        break
+                if is_following:
+                    user.following.remove(follow_user)
+                    msg = message(msg='取关成功！', status='success')
+                else:
+                    user.following.add(follow_user)
+                    msg = message(msg='关注成功！', status='success')
+        elif action=='favour_hs':
+            hs_id=body.get('hotspot_id')
+            if hs_id:
+                hs_id=int(hs_id)
+                hotspot=HotSpot.objects.filter(id=hs_id).first()
+                user = User.objects.filter(access_token=access_token).first()
+                is_favour = False
+                for x in user.favour_hotspot.all():
+                    if x.id == hs_id:
+                        is_favour = True
+                        break
+                if is_favour:
+                    user.favour_hotspot.remove(hotspot)
+                    msg = message(msg='取消收藏成功！', status='success_unfavour')
+                else:
+                    user.favour_hotspot.add(hotspot)
+                    msg = message(msg='收藏成功！', status='success_favour')
         return JsonResponse(msg)
 
 

@@ -2,7 +2,9 @@ from django.views.generic.base import View
 from django.http import JsonResponse, QueryDict
 
 from hotspotapp.models import HotSpot
+from userapp.models import User
 from androidbackend.utils import message
+from androidbackend.settings import ACCESS_TOKEN
 
 
 class HotSpotBase(View):
@@ -10,8 +12,16 @@ class HotSpotBase(View):
     def get(self, request):
         id = request.GET.get('id', '')
         if id:
+            id=int(id)
             hs = HotSpot.objects.filter(id=id).first()
-            return JsonResponse(hs.tojson())
+            access_token=request.META.get(ACCESS_TOKEN)
+            user=User.objects.filter(access_token=access_token).first()
+            hs_json=hs.tojson()
+            for hs in user.favour_hotspot.all():
+                if id == hs.id:
+                    hs_json['isfavour']=1
+                    break
+            return JsonResponse(hs_json)
         else:
             all_hs = []
             for item in HotSpot.objects.all():

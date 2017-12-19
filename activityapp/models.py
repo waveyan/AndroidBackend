@@ -1,7 +1,10 @@
 from django.db import models
 
 from hotspotapp.models import HotSpot
-from userapp.models import User
+
+
+# 避免循环引用
+# from userapp.models import User
 
 
 class Activity(models.Model):
@@ -16,7 +19,8 @@ class Activity(models.Model):
     pic = models.ImageField('活动图片', max_length=100)
     price = models.DecimalField('费用', max_digits=6, decimal_places=2)
     hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # user = models.ForeignKey(User, on_delete=models.CASCADE)
+    host_user = models.CharField('活动发起人账号', max_length=50, null=True)
 
     def __str__(self):
         return self.title

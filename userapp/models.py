@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from hotspotapp.models import HotSpot
+from activityapp.models import Activity
+
 
 class User(models.Model):
     name = models.CharField("昵称", max_length=50, default='')
@@ -16,6 +19,8 @@ class User(models.Model):
     access_token = models.CharField('验证头', max_length=100, default='', unique=True)
     following = models.ManyToManyField('self')
     follower = models.ManyToManyField('self')
+    favour_hotspot = models.ManyToManyField(HotSpot)
+    favour_activity = models.ManyToManyField(Activity)
 
     def __str__(self):
         return self.name
