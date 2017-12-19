@@ -23,5 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('userapp.urls')),
     path('hotspot/', include('hotspotapp.urls')),
+    path('evaluation/', include('evaluationapp.urls')),
     url(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT}),
 ]

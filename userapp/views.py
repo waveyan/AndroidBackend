@@ -4,7 +4,7 @@ from django.http import JsonResponse, QueryDict
 from django.views.decorators.http import require_http_methods
 
 from userapp.models import User
-from androidbackend.utils import message, make_security,handle_uploaded_file
+from androidbackend.utils import message, make_security, handle_uploaded_file
 from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
 # from userapp.forms import UserForm
 from hotspotapp.models import HotSpot
@@ -65,9 +65,11 @@ class UserManager(View):
                 pic = request.FILES.get('pic', '')
                 if pic:
                     pic_name = pic.name
-                    relative_path = user.telephone + '.' + pic_name.split('.')[-1]
-                    path = os.path.join(MEDIA_ROOT, relative_path)
-                    handle_uploaded_file(pic, path)
+                    dst_name = user.telephone + '.' + pic_name.split('.')[-1]
+                    dst_path = os.path.join(MEDIA_ROOT, 'pic')
+                    dst = os.path.join(dst_path, dst_name)
+                    relative_path = os.path.join('pic', dst_name)
+                    handle_uploaded_file(pic, dst)
                     user.pic = relative_path
                     user.save()
                 if name:
@@ -140,6 +142,7 @@ def get_my_follow(request):
         follow['follower'].append(f)
     return JsonResponse(follow)
 
+
 # 收藏列表
 @require_http_methods(['GET'])
 def get_my_favour(request):
@@ -162,4 +165,3 @@ def get_my_favour(request):
     #     f['pic'] = str(follower.pic)
     #     follow['follower'].append(f)
     return JsonResponse(favour)
-
