@@ -4,7 +4,7 @@ from django.http import JsonResponse, QueryDict
 from django.views.decorators.http import require_http_methods
 
 from userapp.models import User
-from androidbackend.utils import message, make_security
+from androidbackend.utils import message, make_security,handle_uploaded_file
 from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
 # from userapp.forms import UserForm
 from hotspotapp.models import HotSpot
@@ -81,10 +81,10 @@ class UserManager(View):
     # 关注 and 收藏
     def put(self, request):
         body = QueryDict(request.body)
-        msg=message(msg='操作失败！')
-        action=body.get('action')
+        msg = message(msg='操作失败！')
+        action = body.get('action')
         access_token = request.META.get(ACCESS_TOKEN, '')
-        if action=='follow':
+        if action == 'follow':
             follow_id = body.get('follow_id')
             msg = message(msg='操作失败')
             if access_token and follow_id:
@@ -97,15 +97,15 @@ class UserManager(View):
                         break
                 if is_following:
                     user.following.remove(follow_user)
-                    msg = message(msg='取关成功！', status='success')
+                    msg = message(msg='取关成功！', status='success_unfollow')
                 else:
                     user.following.add(follow_user)
-                    msg = message(msg='关注成功！', status='success')
-        elif action=='favour_hs':
-            hs_id=body.get('hotspot_id')
+                    msg = message(msg='关注成功！', status='success_follow')
+        elif action == 'favour_hs':
+            hs_id = body.get('hotspot_id')
             if hs_id:
-                hs_id=int(hs_id)
-                hotspot=HotSpot.objects.filter(id=hs_id).first()
+                hs_id = int(hs_id)
+                hotspot = HotSpot.objects.filter(id=hs_id).first()
                 user = User.objects.filter(access_token=access_token).first()
                 is_favour = False
                 for x in user.favour_hotspot.all():
@@ -122,7 +122,7 @@ class UserManager(View):
 
 
 # 粉丝和关注列表
-@require_http_methods(['POST'])
+@require_http_methods(['GET'])
 def get_my_follow(request):
     access_token = request.META.get(ACCESS_TOKEN)
     user = User.objects.filter(access_token=access_token).first()
@@ -140,8 +140,26 @@ def get_my_follow(request):
         follow['follower'].append(f)
     return JsonResponse(follow)
 
+# 收藏列表
+@require_http_methods(['GET'])
+def get_my_favour(request):
+    access_token = request.META.get(ACCESS_TOKEN)
+    user = User.objects.filter(access_token=access_token).first()
+    from collections import defaultdict
+    favour = defaultdict(lambda: [])
+    for hs in user.favour_hotspot.all():
+        f = {}
+        f['id'] = hs.id
+        f['name'] = hs.name
+        f['type'] = hs.type
+        f['pic1'] = str(hs.pic1)
+        f['pic2'] = str(hs.pic2)
+        f['pic3'] = str(hs.pic3)
+        favour['hotspot'].append(f)
+    # for follower in user.favour_activity.all():
+    #     f = {}
+    #     f['name'] = follower.name
+    #     f['pic'] = str(follower.pic)
+    #     follow['follower'].append(f)
+    return JsonResponse(favour)
 
-def handle_uploaded_file(f, path):
-    with open(path, 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)

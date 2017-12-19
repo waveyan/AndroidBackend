@@ -9,7 +9,7 @@ from datetime import datetime
 class Evaluation(models.Model):
     rate = models.IntegerField('评分', default=0)
     feeling = models.CharField('心情', max_length=200)
-    pic = models.ImageField('游玩图片', max_length=100, null=True)
+    pic = models.CharField('游玩图片', max_length=100, null=True)
     price = models.DecimalField('消费', null=True, max_digits=6, decimal_places=2)
     likes = models.IntegerField('点赞数', default=0)
     hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE)
