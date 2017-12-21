@@ -8,7 +8,7 @@ from androidbackend.settings import ACCESS_TOKEN
 
 
 class HotSpotBase(View):
-    # 获取地点列表
+    # 获取地点列表,类型待完成！！！
     def get(self, request):
         id = request.GET.get('id', '')
         if id:
@@ -23,14 +23,17 @@ class HotSpotBase(View):
                     break
             return JsonResponse(hs_json)
         else:
-            all_hs = []
+            all_hs_dict={}
+            all_hs_dict['all_hs_list']=[]
             for item in HotSpot.objects.all():
                 hs = {}
                 hs['id'] = item.id
                 hs['name'] = item.name
-                hs['pic'] = str(item.pic)
-                all_hs.append(hs)
-            return JsonResponse(all_hs, safe=False)
+                hs['pic1'] = str(item.pic1)
+                hs['pic2'] = str(item.pic2)
+                hs['pic3'] = str(item.pic3)
+                all_hs_dict['all_hs_list'].append(hs)
+            return JsonResponse(all_hs_dict)
 
     # 推荐地点
     def post(self, request):

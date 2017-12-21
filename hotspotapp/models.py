@@ -1,19 +1,27 @@
 from django.db import models
-from androidbackend.utils import upload_to
+
+import os
+
+
+def upload_to(instance, filename):
+    id = instance.id
+    if not instance:
+        id = HotSpot.objects.latest('id').id + 1
+    return os.path.join('activity', str(id), filename)
 
 
 class HotSpot(models.Model):
     name = models.CharField("地点名称", max_length=50)
-    englishname=models.CharField("英文名称",max_length=100,null=True)
+    englishname = models.CharField("英文名称", max_length=100, null=True)
     word = models.CharField("一句话描述", max_length=100, blank=True, null=True)
     worktime = models.CharField("营业时间", max_length=100, null=True)
     price = models.CharField("人均消费", max_length=30, null=True)
     city = models.CharField("所在城市", max_length=50, null=True, blank=True)
-    pic1 = models.ImageField("图片一", max_length=100, upload_to=upload_to,default='')
+    pic1 = models.ImageField("图片一", max_length=100, upload_to=upload_to, default='')
     pic1_text = models.CharField('图一解说', max_length=200, default='', null=True)
-    pic2 = models.ImageField("图二", max_length=100, upload_to=upload_to,default='')
+    pic2 = models.ImageField("图二", max_length=100, upload_to=upload_to, default='')
     pic2_text = models.CharField('图二解说', max_length=200, default='', null=True)
-    pic3 = models.ImageField("图片三", max_length=100, upload_to=upload_to,default='')
+    pic3 = models.ImageField("图片三", max_length=100, upload_to=upload_to, default='')
     pic3_text = models.CharField('图三解说', max_length=200, default='', null=True)
     content = models.TextField("内容", max_length=1000)
     address = models.CharField("详细地址", max_length=200)
@@ -30,7 +38,7 @@ class HotSpot(models.Model):
         hs = {}
         hs['id'] = self.id
         hs['name'] = self.name
-        hs['englishname']=self.englishname
+        hs['englishname'] = self.englishname
         hs['word'] = self.word
         hs['worktime'] = self.worktime
         hs['price'] = self.price
@@ -48,7 +56,7 @@ class HotSpot(models.Model):
         hs['arrived'] = self.arrived
         hs['telephone'] = self.telephone
         hs['url'] = self.url
-        hs['isfavour']=0
+        hs['isfavour'] = 0
         return hs
 
     # def tojson_all(self):

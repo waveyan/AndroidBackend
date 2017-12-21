@@ -27,11 +27,11 @@ class EvaluationBase(View):
         user = User.objects.filter(access_token=access_token).first()
         hotspot = HotSpot.objects.filter(id=hs_id).first()
         i = 0
+        relative_path = os.path.join('feeling', user.telephone)
         for pic in request.FILES.getlist('pic'):
             pic_name = pic.name
             dst_name = str(int(datetime.now().timestamp())) + str(i) + '.' + pic_name.split('.')[-1]
             dst_path = os.path.join(MEDIA_ROOT, 'feeling', user.telephone)
-            relative_path = os.path.join('feeling', user.telephone)
             if not os.path.exists(dst_path):
                 os.mkdir(dst_path)
             dst = os.path.join(dst_path, dst_name)
