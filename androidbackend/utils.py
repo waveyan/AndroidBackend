@@ -1,5 +1,4 @@
 from hashlib import md5
-import os
 
 
 def message(**kwargs):
@@ -16,9 +15,6 @@ def message(**kwargs):
 def make_security(data):
     return md5(data).hexdigest()
 
-
-def upload_to(instance, filename):
-    return os.path.join(str(instance.id), filename)
 
 def handle_uploaded_file(f, path):
     with open(path, 'wb+') as destination:

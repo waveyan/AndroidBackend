@@ -24,5 +24,6 @@ urlpatterns = [
     path('user/', include('userapp.urls')),
     path('hotspot/', include('hotspotapp.urls')),
     path('evaluation/', include('evaluationapp.urls')),
+    path('activity/',include('activityapp.urls')),
     url(r'^media/(?P<path>.*)$', serve, {"document_root": MEDIA_ROOT}),
 ]
