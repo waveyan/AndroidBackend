@@ -4,7 +4,7 @@ from activityapp.models import Activity
 
 
 class ActivityAdmin(admin.ModelAdmin):
-    list_display = ['title', 'subject']
+    list_display = ['title','id', 'subject']
     # list_filter=['created_time']
 
 

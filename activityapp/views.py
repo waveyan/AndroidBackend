@@ -1,10 +1,7 @@
-from django.db.utils import IntegrityError
 from django.views.generic.base import View
 from django.http import JsonResponse, QueryDict
-from django.views.decorators.http import require_http_methods
 
-from androidbackend.utils import message, make_security, handle_uploaded_file
-from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
+from androidbackend.utils import message
 from activityapp.models import Activity
 from activityapp.forms import ActivityForm
 from hotspotapp.models import HotSpot
@@ -14,10 +11,10 @@ class ActivityBase(View):
 
     # 获取活动
     def get(self, request):
-        num=request.GET.get('num')
+        num = request.GET.get('num')
         activities = Activity.objects.all().order_by('id')
         if num:
-            activities=activities[:int(num)]
+            activities = activities[:int(num)]
         all_act = {}
         all_act['activity'] = []
         for item in activities:
@@ -31,7 +28,13 @@ class ActivityBase(View):
     # 提交活動
     def post(self, request):
         hotspot_id = request.POST.get('hotspot_id')
-        activity_form = ActivityForm(request.POST, request.FILES)
+        activity_id = request.POST.get('instance_id')
+        action = request.POST.get('action')
+        if action == 'upload_pic':
+            activity = Activity.objects.filter(id=activity_id).first()
+            activity_form = ActivityForm(request.POST, request.FILES, instance=activity)
+        else:
+            activity_form = ActivityForm(request.POST, request.FILES)
         try:
             if activity_form.is_valid():
                 if hotspot_id:
@@ -40,9 +43,13 @@ class ActivityBase(View):
                     activity.save()
                 else:
                     activity_form.save()
-                msg = message(status='success', msg='创建活动成功')
+                id = Activity.objects.latest('id').id
+                msg = message(status='success', msg='操作活动成功', instance_Id=id)
+                return JsonResponse(msg)
+            else:
+                msg = message(msg='操作活动失败')
                 return JsonResponse(msg)
         except Exception as e:
-            print('提交活动',e)
-            msg=message(msg='创建活动失败')
+            print('操作活动', e)
+            msg = message(msg='操作活动失败')
             return JsonResponse(msg)

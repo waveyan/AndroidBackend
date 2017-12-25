@@ -4,7 +4,8 @@ from hashlib import md5
 def message(**kwargs):
     msg = {
         'msg': kwargs.get('msg', ''),
-        'status': kwargs.get('status', 'fail')
+        'status': kwargs.get('status', 'fail'),
+        'id': kwargs.get('instance_Id', '')
     }
     access_token = kwargs.get('access_token', '')
     if access_token:

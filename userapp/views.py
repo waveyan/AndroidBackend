@@ -8,6 +8,7 @@ from androidbackend.utils import message, make_security, handle_uploaded_file
 from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
 # from userapp.forms import UserForm
 from hotspotapp.models import HotSpot
+from activityapp.models import Activity
 
 import os
 
@@ -86,6 +87,7 @@ class UserManager(View):
         msg = message(msg='操作失败！')
         action = body.get('action')
         access_token = request.META.get(ACCESS_TOKEN, '')
+        # 关注好友
         if action == 'follow':
             follow_id = body.get('follow_id')
             msg = message(msg='操作失败')
@@ -103,6 +105,7 @@ class UserManager(View):
                 else:
                     user.following.add(follow_user)
                     msg = message(msg='关注成功！', status='success_follow')
+        # 收藏地点
         elif action == 'favour_hs':
             hs_id = body.get('hotspot_id')
             if hs_id:
@@ -119,6 +122,24 @@ class UserManager(View):
                     msg = message(msg='取消收藏成功！', status='success_unfavour')
                 else:
                     user.favour_hotspot.add(hotspot)
+                    msg = message(msg='收藏成功！', status='success_favour')
+        # 收藏活动
+        elif action == 'favour_act':
+            act_id = body.get('activity_id')
+            if act_id:
+                act_id = int(act_id)
+                activity = Activity.objects.filter(id=act_id).first()
+                user = User.objects.filter(access_token=access_token).first()
+                is_favour = False
+                for x in user.favour_activity.all():
+                    if x.id == act_id:
+                        is_favour = True
+                        break
+                if is_favour:
+                    user.favour_hotspot.remove(activity)
+                    msg = message(msg='取消收藏成功！', status='success_unfavour')
+                else:
+                    user.favour_hotspot.add(activity)
                     msg = message(msg='收藏成功！', status='success_favour')
         return JsonResponse(msg)
 
@@ -151,17 +172,9 @@ def get_my_favour(request):
     from collections import defaultdict
     favour = defaultdict(lambda: [])
     for hs in user.favour_hotspot.all():
-        f = {}
-        f['id'] = hs.id
-        f['name'] = hs.name
-        f['type'] = hs.type
-        f['pic1'] = str(hs.pic1)
-        f['pic2'] = str(hs.pic2)
-        f['pic3'] = str(hs.pic3)
-        favour['hotspot'].append(f)
-    # for follower in user.favour_activity.all():
-    #     f = {}
-    #     f['name'] = follower.name
-    #     f['pic'] = str(follower.pic)
-    #     follow['follower'].append(f)
+        favour['hotspot'].append(hs.tojson())
+    # 注意！！
+    for activity in user.favour_activity.all():
+        favour['activity'].append(activity.tojson())
+    # 可能有路线
     return JsonResponse(favour)

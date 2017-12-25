@@ -22,11 +22,12 @@ class Activity(models.Model):
     person = models.IntegerField("限定人数", null=True, blank=True)
     telephone = models.CharField('联系方式', max_length=200)
     website = models.CharField('活动网址', max_length=500, blank=True)
-    pic1 = models.ImageField('活动图片1', upload_to=upload_to,default='activity/default.png', max_length=100, null=True)
+    pic1 = models.ImageField('活动图片1', upload_to=upload_to, default='activity/default.png', max_length=100, null=True,
+                             blank=True)
     pic3 = models.ImageField('活动图片2', upload_to=upload_to, max_length=100, null=True, blank=True)
     pic2 = models.ImageField('活动图片3', upload_to=upload_to, max_length=100, null=True, blank=True)
     price = models.DecimalField('费用', max_digits=6, decimal_places=2, blank=True)
-    hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE, null=True,blank=True)
+    hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE, null=True, blank=True)
     # user = models.ForeignKey(User, on_delete=models.CASCADE)
     host_user = models.CharField('活动发起人账号', max_length=50, null=True, blank=True)
 
@@ -35,7 +36,7 @@ class Activity(models.Model):
 
     def tojson(self):
         a = {}
-        a['id']=self.id
+        a['id'] = self.id
         a['title'] = self.title
         a['subject'] = self.subject
         a['time'] = self.time
