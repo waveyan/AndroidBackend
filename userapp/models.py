@@ -36,4 +36,21 @@ class User(models.Model):
         j['introduction'] = self.introduction
         j['email'] = self.email
         j['credit'] = self.credit
+        j['evaluation']={'evaluation':[]}
+        for x in self.evaluation_set.all():
+            j['evaluation']['evaluation'].append(x.tojson_except_user())
+        return j
+
+
+    def tojson_except_evaluation(self):
+        j = {}
+        j['name'] = self.name
+        j['birthday'] = self.birthday
+        j['gender'] = self.gender
+        j['address'] = self.address
+        j['telephone'] = self.telephone
+        j['pic'] = str(self.pic)
+        j['introduction'] = self.introduction
+        j['email'] = self.email
+        j['credit'] = self.credit
         return j

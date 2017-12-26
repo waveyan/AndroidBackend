@@ -30,6 +30,7 @@ class Activity(models.Model):
     hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE, null=True, blank=True)
     # user = models.ForeignKey(User, on_delete=models.CASCADE)
     host_user = models.CharField('活动发起人账号', max_length=50, null=True, blank=True)
+    englishname=models.CharField('活动英文名',max_length=100,null=True,blank=True)
 
     def __str__(self):
         return self.title
@@ -49,6 +50,11 @@ class Activity(models.Model):
         a['pic2'] = str(self.pic3)
         a['pic3'] = str(self.pic2)
         a['price'] = self.price
+        a['englishname']=self.englishname
         if self.hotspot:
             a['hotspot'] = self.hotspot.tojson()
+        #想去的人
+        a['wanttogo']=[]
+        for x in self.user_set.all():
+            a['wanttogo'].append(x.tojson())
         return a

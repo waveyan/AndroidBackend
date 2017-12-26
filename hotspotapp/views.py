@@ -11,11 +11,11 @@ class HotSpotBase(View):
     # 获取地点列表,类型待完成！！！
     def get(self, request):
         id = request.GET.get('id', '')
+        access_token=request.META.get(ACCESS_TOKEN)
+        user=User.objects.filter(access_token=access_token).first()
         if id:
             id=int(id)
             hs = HotSpot.objects.filter(id=id).first()
-            access_token=request.META.get(ACCESS_TOKEN)
-            user=User.objects.filter(access_token=access_token).first()
             hs_json=hs.tojson()
             for hs in user.favour_hotspot.all():
                 if id == hs.id:
@@ -24,15 +24,14 @@ class HotSpotBase(View):
             return JsonResponse(hs_json)
         else:
             all_hs_dict={}
-            all_hs_dict['all_hs_list']=[]
+            all_hs_dict['hotspot']=[]
             for item in HotSpot.objects.all():
-                hs = {}
-                hs['id'] = item.id
-                hs['name'] = item.name
-                hs['pic1'] = str(item.pic1)
-                hs['pic2'] = str(item.pic2)
-                hs['pic3'] = str(item.pic3)
-                all_hs_dict['all_hs_list'].append(hs)
+                item_json=item.tojson()
+                for hs in user.favour_hotspot.all():
+                    if item.id == hs.id:
+                        item_json['isfavour']=1
+                        break
+                all_hs_dict['hotspot'].append(item_json)
             return JsonResponse(all_hs_dict)
 
     # 推荐地点

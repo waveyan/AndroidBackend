@@ -152,15 +152,9 @@ def get_my_follow(request):
     from collections import defaultdict
     follow = defaultdict(lambda: [])
     for fans in user.following.all():
-        f = {}
-        f['name'] = fans.name
-        f['pic'] = str(fans.pic)
-        follow['following'].append(f)
+        follow['following'].append(fans.tojson())
     for follower in user.follower.all():
-        f = {}
-        f['name'] = follower.name
-        f['pic'] = str(follower.pic)
-        follow['follower'].append(f)
+        follow['follower'].append(follower.tojson())
     return JsonResponse(follow)
 
 
@@ -172,9 +166,13 @@ def get_my_favour(request):
     from collections import defaultdict
     favour = defaultdict(lambda: [])
     for hs in user.favour_hotspot.all():
-        favour['hotspot'].append(hs.tojson())
+        hs_json=hs.tojson()
+        hs_json['isfavour']=1
+        favour['hotspot'].append(hs_json)
     # 注意！！
     for activity in user.favour_activity.all():
-        favour['activity'].append(activity.tojson())
+        activity_json=activity.tojson()
+        activity_json['isfavour']=1
+        favour['activity'].append(activity_json)
     # 可能有路线
     return JsonResponse(favour)

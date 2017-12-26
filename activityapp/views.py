@@ -5,21 +5,42 @@ from androidbackend.utils import message
 from activityapp.models import Activity
 from activityapp.forms import ActivityForm
 from hotspotapp.models import HotSpot
+from userapp.models import User
 
 
 class ActivityBase(View):
 
-    # 获取活动
+    # 获取活动,action,num
     def get(self, request):
-        num = request.GET.get('num')
-        activities = Activity.objects.all().order_by('id')
-        if num:
-            activities = activities[:int(num)]
-        all_act = {}
-        all_act['activity'] = []
-        for item in activities:
-            all_act['activity'].append(item.tojson())
-        return JsonResponse(all_act)
+        
+        action=request.GET.get('action')
+        #活动详情
+        if action=='detail':
+            act_id=request.GET.get('act_id')
+            activity=Activity.objects.filter(id=act_id).first()
+            activity_json=activity.tojson()
+            host_user=User.objects.filter(telephone=activity.host_user).first()
+            if host_user:
+                activity_json['host_user']=host_user.tojson()
+            return JsonResponse(activity.tojson())
+        #获取活动列表,
+        else:
+            activities=[]
+            num = request.GET.get('num')
+            activities = Activity.objects.all().order_by('-id')
+            if num:
+                activities = activities[:int(num)]
+            all_act = {}
+            all_act['activity'] = []
+            for item in activities:
+                activity_json=item.tojson()
+                host_user=User.objects.filter(telephone=item.host_user).first()
+                if host_user:
+                    activity_json['host_user']=host_user.tojson()
+                all_act['activity'].append(activity_json)
+            return JsonResponse(all_act)
+
+
 
     # 修改活動
     def put(self, request):
