@@ -136,10 +136,10 @@ class UserManager(View):
                         is_favour = True
                         break
                 if is_favour:
-                    user.favour_hotspot.remove(activity)
+                    user.favour_activity.remove(activity)
                     msg = message(msg='取消收藏成功！', status='success_unfavour')
                 else:
-                    user.favour_hotspot.add(activity)
+                    user.favour_activity.add(activity)
                     msg = message(msg='收藏成功！', status='success_favour')
         return JsonResponse(msg)
 
@@ -166,13 +166,34 @@ def get_my_favour(request):
     from collections import defaultdict
     favour = defaultdict(lambda: [])
     for hs in user.favour_hotspot.all():
-        hs_json=hs.tojson()
-        hs_json['isfavour']=1
+        hs_json = hs.tojson()
+        hs_json['isfavour'] = 1
         favour['hotspot'].append(hs_json)
     # 注意！！
     for activity in user.favour_activity.all():
-        activity_json=activity.tojson()
-        activity_json['isfavour']=1
+        activity_json = activity.tojson()
+        host_user = User.objects.filter(telephone=activity.host_user).first()
+        if host_user:
+            activity_json['host_user'] = host_user.tojson()
+        activity_json['isfavour'] = 1
         favour['activity'].append(activity_json)
     # 可能有路线
     return JsonResponse(favour)
+
+
+# 我创建的活动
+@require_http_methods(['GET'])
+def get_my_activity(request):
+    access_token = request.META.get(ACCESS_TOKEN)
+    user = User.objects.filter(access_token=access_token).first()
+    my_activities = Activity.objects.filter(host_user=user.telephone).all()
+    my_act = {'activity': []}
+    for a in my_activities:
+        activity_json = a.tojson()
+        for item in user.favour_activity.all():
+            if a.id==item.id:
+                activity_json['isfavour']=1
+                break
+        activity_json['host_user'] = user.tojson()
+        my_act['activity'].append(activity_json)
+    return JsonResponse(my_act)

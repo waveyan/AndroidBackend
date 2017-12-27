@@ -26,6 +26,7 @@ class Activity(models.Model):
                              blank=True)
     pic3 = models.ImageField('活动图片2', upload_to=upload_to, max_length=100, null=True, blank=True)
     pic2 = models.ImageField('活动图片3', upload_to=upload_to, max_length=100, null=True, blank=True)
+    pic4 = models.ImageField('活动图片3', upload_to=upload_to, max_length=100, null=True, blank=True)
     price = models.DecimalField('费用', max_digits=6, decimal_places=2, blank=True)
     hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE, null=True, blank=True)
     # user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -49,8 +50,12 @@ class Activity(models.Model):
         a['pic1'] = str(self.pic1)
         a['pic2'] = str(self.pic3)
         a['pic3'] = str(self.pic2)
+        a['pic4'] = str(self.pic4)
         a['price'] = self.price
         a['englishname']=self.englishname
+        a['host_user']={}
+        a['hotspot']={}
+        a['isfavour']=0
         if self.hotspot:
             a['hotspot'] = self.hotspot.tojson()
         #想去的人

@@ -2,10 +2,12 @@ from django.views.generic.base import View
 from django.http import JsonResponse, QueryDict
 
 from androidbackend.utils import message
+from androidbackend.settings import ACCESS_TOKEN
 from activityapp.models import Activity
 from activityapp.forms import ActivityForm
 from hotspotapp.models import HotSpot
 from userapp.models import User
+
 
 
 class ActivityBase(View):
@@ -14,15 +16,20 @@ class ActivityBase(View):
     def get(self, request):
         
         action=request.GET.get('action')
+        user=User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
         #活动详情
         if action=='detail':
             act_id=request.GET.get('act_id')
             activity=Activity.objects.filter(id=act_id).first()
             activity_json=activity.tojson()
             host_user=User.objects.filter(telephone=activity.host_user).first()
+            for a in user.favour_activity.all():
+                if int(a.id)==int(act_id):
+                    activity_json['isfavour']=1
+                    break
             if host_user:
                 activity_json['host_user']=host_user.tojson()
-            return JsonResponse(activity.tojson())
+            return JsonResponse(activity_json)
         #获取活动列表,
         else:
             activities=[]
@@ -34,6 +41,10 @@ class ActivityBase(View):
             all_act['activity'] = []
             for item in activities:
                 activity_json=item.tojson()
+                for a in user.favour_activity.all():
+                    if int(a.id)==int(item.id):
+                        activity_json['isfavour']=1
+                        break
                 host_user=User.objects.filter(telephone=item.host_user).first()
                 if host_user:
                     activity_json['host_user']=host_user.tojson()
