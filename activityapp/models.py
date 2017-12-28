@@ -37,6 +37,13 @@ class Activity(models.Model):
         return self.title
 
     def tojson(self):
+        a = self.tojson_except_hotspot()
+        if self.hotspot:
+            a['hotspot'] = self.hotspot.tojson()
+        return a
+
+
+    def tojson_except_hotspot(self):
         a = {}
         a['id'] = self.id
         a['title'] = self.title
@@ -52,14 +59,12 @@ class Activity(models.Model):
         a['pic3'] = str(self.pic2)
         a['pic4'] = str(self.pic4)
         a['price'] = self.price
-        a['englishname']=self.englishname
-        a['host_user']={}
-        a['hotspot']={}
-        a['isfavour']=0
-        if self.hotspot:
-            a['hotspot'] = self.hotspot.tojson()
-        #想去的人
-        a['wanttogo']=[]
+        a['englishname'] = self.englishname
+        a['host_user'] = {}
+        a['hotspot'] = {}
+        a['isfavour'] = 0
+        # 想去的人
+        a['wanttogo'] = []
         for x in self.user_set.all():
             a['wanttogo'].append(x.tojson())
         return a

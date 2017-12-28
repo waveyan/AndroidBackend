@@ -29,7 +29,7 @@ class Evaluation(models.Model):
     def __str__(self):
         return self.feeling
 
-    def tojson(self):
+    def tojson_base(self):
         e = {}
         e['rate'] = self.rate
         e['feeling'] = self.feeling
@@ -38,23 +38,23 @@ class Evaluation(models.Model):
         e['pic3'] = str(self.pic3)
         e['price'] = self.price
         e['likes'] = self.likes
-        e['hotspot'] = self.hotspot.tojson()
-        e['user'] = self.user.tojson_except_evaluation()
         e['time'] = self.time
         return e
 
-    def tojson_except_user(self):
-        e = {}
-        e['rate'] = self.rate
-        e['feeling'] = self.feeling
-        e['pic1'] = str(self.pic1)
-        e['pic2'] = str(self.pic2)
-        e['pic3'] = str(self.pic3)
-        e['price'] = self.price
-        e['likes'] = self.likes
+    def tojson(self):
+        e = self.tojson_base()
         e['hotspot'] = self.hotspot.tojson()
-        #e['user'] = self.user.tojson()
-        e['time'] = self.time
+        e['user'] = self.user.tojson_except_evaluation()
+        return e
+
+    def tojson_except_user(self):
+        e = self.tojson_base()
+        e['hotspot'] = self.hotspot.tojson()
+        return e
+
+    def tojson_except_hotspot(self):
+        e = self.tojson_base()
+        e['user'] = self.user.tojson_except_evaluation()
         return e
 
 

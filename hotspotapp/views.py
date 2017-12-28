@@ -10,27 +10,42 @@ from androidbackend.settings import ACCESS_TOKEN
 class HotSpotBase(View):
     # 获取地点列表,类型待完成！！！
     def get(self, request):
-        id = request.GET.get('id', '')
-        access_token=request.META.get(ACCESS_TOKEN)
-        user=User.objects.filter(access_token=access_token).first()
+        id = request.GET.get('hotspot_id', '')
+        access_token = request.META.get(ACCESS_TOKEN)
+        user = User.objects.filter(access_token=access_token).first()
         if id:
-            id=int(id)
+            id = int(id)
             hs = HotSpot.objects.filter(id=id).first()
-            hs_json=hs.tojson()
+            hs_json = hs.tojson()
+            hs_json['activity']={'activity':[]}
+            hs_json['evaluation'] = {'evaluation': []}
+            for evaluation in hs.evaluation_set.all():
+                hs_json['evaluation']['evaluation'].append(evaluation.tojson_except_hotspot())
+            # 活动
+            for activity in hs.activity_set.all():
+                hs_json['activity']['activity'].append(activity.tojson_except_hotspot())
             for hs in user.favour_hotspot.all():
                 if id == hs.id:
-                    hs_json['isfavour']=1
+                    hs_json['isfavour'] = 1
                     break
             return JsonResponse(hs_json)
         else:
-            all_hs_dict={}
-            all_hs_dict['hotspot']=[]
+            all_hs_dict = {}
+            all_hs_dict['hotspot'] = []
             for item in HotSpot.objects.all():
-                item_json=item.tojson()
+                item_json = item.tojson()
+                item_json['activity']={'activity':[]}
+                item_json['evaluation'] = {'evaluation': []}
                 for hs in user.favour_hotspot.all():
                     if item.id == hs.id:
-                        item_json['isfavour']=1
+                        item_json['isfavour'] = 1
                         break
+                # 活动
+                for activity in item.activity_set.all():
+                    item_json['activity']['activity'].append(activity.tojson_except_hotspot())
+                # 评价
+                for evaluation in item.evaluation_set.all():
+                    item_json['evaluation']['evaluation'].append(evaluation.tojson_except_hotspot())
                 all_hs_dict['hotspot'].append(item_json)
             return JsonResponse(all_hs_dict)
 

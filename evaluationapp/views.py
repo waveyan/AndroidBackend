@@ -1,5 +1,6 @@
 from django.views.generic.base import View
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 
 from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
 from userapp.models import User
@@ -40,7 +41,7 @@ class EvaluationBase(View):
         hotspot_id = request.POST.get('hotspot_id')
         action = request.POST.get('action')
         if action == 'upload_pic':
-            evaluation_id=request.POST.get('instance_id')
+            evaluation_id = request.POST.get('instance_id')
             evaluation = Evaluation.objects.filter(id=evaluation_id).first()
             evaluation_form = EvaluationForm(request.POST, request.FILES, instance=evaluation)
         else:
@@ -49,7 +50,7 @@ class EvaluationBase(View):
             if evaluation_form.is_valid():
                 evaluation = evaluation_form.save(commit=False)
                 evaluation.hotspot = HotSpot.objects.filter(id=hotspot_id).first()
-                evaluation.user=User.objects.filter(access_token=access_token).first()
+                evaluation.user = User.objects.filter(access_token=access_token).first()
                 evaluation.save()
                 id = Evaluation.objects.latest('id').id
                 msg = message(status='success', msg='发表评论成功！', instance_Id=id)
@@ -65,3 +66,15 @@ class EvaluationBase(View):
     # 删除评论
     def delete(self, request):
         pass
+
+
+@require_http_methods(['GET'])
+def get_evaluation_from_my_follow(request):
+    access_token = request.META.get(ACCESS_TOKEN)
+    user = User.objects.filter(access_token=access_token).first()
+    evaluation_list = []
+    for follow in user.following.all():
+        for item in follow.evaluation_set.all():
+            evaluation_list.append(item.tojson())
+    evaluation_list = sorted(evaluation_list, key=lambda x: x['time'], reverse=True)
+    return JsonResponse({'evaluation': evaluation_list})

@@ -17,9 +17,13 @@ class UserManager(View):
     # detail
     def get(self, request):
         access_token = request.META.get(ACCESS_TOKEN, '')
-        if access_token:
+        action = request.GET.get('action')
+        if action == 'detail':
+            user_id = request.GET.get('usr_id')
+            user = User.objects.filter(pk=user_id).first()
+        else:
             user = User.objects.filter(access_token=access_token).first()
-            return JsonResponse(user.tojson())
+        return JsonResponse(user.tojson())
 
     # register and login
     def post(self, request):
@@ -191,8 +195,8 @@ def get_my_activity(request):
     for a in my_activities:
         activity_json = a.tojson()
         for item in user.favour_activity.all():
-            if a.id==item.id:
-                activity_json['isfavour']=1
+            if a.id == item.id:
+                activity_json['isfavour'] = 1
                 break
         activity_json['host_user'] = user.tojson()
         my_act['activity'].append(activity_json)
