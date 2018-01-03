@@ -6,7 +6,6 @@ from django.views.decorators.http import require_http_methods
 from userapp.models import User
 from androidbackend.utils import message, make_security, handle_uploaded_file
 from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
-# from userapp.forms import UserForm
 from hotspotapp.models import HotSpot
 from activityapp.models import Activity
 
@@ -38,8 +37,11 @@ class UserManager(View):
             password = make_security(password.encode('utf8'))
             user = User.objects.filter(telephone=telephone, password=password).first()
             if user:
-                msg = message(msg='登录成功!', status='success', access_token=user.access_token)
-                return JsonResponse(msg)
+                user_json=user.tojson()
+                user_json['msg']="登录成功！"
+                user_json['status']='success'
+                user_json['access_token']=user.access_token
+                return JsonResponse(user_json)
             else:
                 msg = message(msg='账户或密码错误!')
                 return JsonResponse(msg)
@@ -63,23 +65,9 @@ class UserManager(View):
             if access_token:
                 user = User.objects.filter(access_token=access_token).first()
                 name = request.POST.get('name', '')
-                # user_form = UserForm(request.POST, request.FILES, instance=user)
-                # if user_form.is_valid():
-                #    user_form.save()
-
-                pic = request.FILES.get('pic', '')
-                if pic:
-                    pic_name = pic.name
-                    dst_name = user.telephone + '.' + pic_name.split('.')[-1]
-                    dst_path = os.path.join(MEDIA_ROOT, 'pic')
-                    dst = os.path.join(dst_path, dst_name)
-                    relative_path = os.path.join('pic', dst_name)
-                    handle_uploaded_file(pic, dst)
-                    user.pic = relative_path
-                    user.save()
-                if name:
-                    user.name = name
-                    user.save()
+                user_form = UserForm(request.POST, request.FILES, instance=user)
+                if user_form.is_valid():
+                   user_form.save()
                 msg = message(msg='修改成功！', status='success')
                 return JsonResponse(msg)
         msg = message(msg='请求信息不全！')

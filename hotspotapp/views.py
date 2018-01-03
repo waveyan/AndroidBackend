@@ -1,7 +1,7 @@
 from django.views.generic.base import View
 from django.http import JsonResponse, QueryDict
 
-from hotspotapp.models import HotSpot
+from hotspotapp.models import HotSpot, District, Route
 from userapp.models import User
 from androidbackend.utils import message
 from androidbackend.settings import ACCESS_TOKEN
@@ -17,7 +17,7 @@ class HotSpotBase(View):
             id = int(id)
             hs = HotSpot.objects.filter(id=id).first()
             hs_json = hs.tojson()
-            hs_json['activity']={'activity':[]}
+            hs_json['activity'] = {'activity': []}
             hs_json['evaluation'] = {'evaluation': []}
             for evaluation in hs.evaluation_set.all():
                 hs_json['evaluation']['evaluation'].append(evaluation.tojson_except_hotspot())
@@ -34,7 +34,7 @@ class HotSpotBase(View):
             all_hs_dict['hotspot'] = []
             for item in HotSpot.objects.all():
                 item_json = item.tojson()
-                item_json['activity']={'activity':[]}
+                item_json['activity'] = {'activity': []}
                 item_json['evaluation'] = {'evaluation': []}
                 for hs in user.favour_hotspot.all():
                     if item.id == hs.id:
@@ -90,3 +90,53 @@ class HotSpotBase(View):
         else:
             msg = message(msg='信息不全，点赞失败！')
             return JsonResponse(msg)
+
+
+# 创建首页
+def create_index(request):
+    user = User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
+    d = []
+    for district in District.objects.all():
+        h = []
+        district_json = district.tojson()
+        for hs in district.hotspot_set.all():
+            hs_json = hs.tojson()
+            for f in user.favour_hotspot.all():
+                if f.id == hs.id:
+                    hs_json['isfavour'] = 1
+                    break
+            h.append(hs_json)
+        district_json['hotspot'] = {'hotspot': h}
+        d.append(district_json)
+    return JsonResponse({'district': d})
+
+
+class RouteBase(View):
+    # 获取路线
+    def get(self, request):
+        access_token = request.META.get(ACCESS_TOKEN)
+        action = request.GET.get('action')
+        route = {'route': []}
+        if action == 'person':
+            user = User.objects.filter(access_token=access_token).first()
+            for r in Route.objects.filter(user=user.telephone).all():
+                route['route'].append(r.tojson())
+        else:
+            for r in Route.objects.all():
+                route['route'].append(r.tojson())
+        return JsonResponse(route)
+
+    # 提交路线
+    def post(self, request):
+        title = request.POST.get('title')
+        introduce = request.POST.get('introduce')
+        time = request.POST.get('time')
+        hotspot_ids = request.POST.get('hotspot_ids', '').split(';')
+        user = User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
+        route = Route(title=title, introduce=introduce, time=time, user=user.telephone)
+        route.save()
+        for x in hotspot_ids:
+            hs = HotSpot.objects.filter(id=x).first()
+            route.hotspot.add(hs)
+        msg = message(msg='提交成功！', status='success')
+        return JsonResponse(msg)

@@ -1,17 +1,13 @@
 from django.views.generic.base import View
-from django.http import JsonResponse
+from django.http import JsonResponse, QueryDict
 from django.views.decorators.http import require_http_methods
 
 from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
 from userapp.models import User
 from hotspotapp.models import HotSpot
-from androidbackend.utils import handle_uploaded_file
 from .models import Evaluation
 from .forms import EvaluationForm
 from androidbackend.utils import message
-
-from datetime import datetime
-import os
 
 
 class EvaluationBase(View):
@@ -62,6 +58,25 @@ class EvaluationBase(View):
             print('发表评论', e)
             msg = message(msg='发表评论失败')
             return JsonResponse(msg)
+
+    # 点赞
+    def put(self, request):
+        body = QueryDict(request.body)
+        user = User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
+        evaluation_id = body.get('evaluation_id')
+        evaluation = Evaluation.objects.filter(pk=evaluation_id).first()
+        islike = True
+        for usr in evaluation.usr_like.all():
+            if usr.id == user.id:
+                islike = False
+                break
+        if islike:
+            evaluation.usr_like.add(user)
+            msg = message(status='success_like', msg='点赞成功')
+        else:
+            evaluation.usr_like.remove(user)
+            msg = message(status='success_unlike', msg='取消点赞')
+        return JsonResponse(msg)
 
     # 删除评论
     def delete(self, request):

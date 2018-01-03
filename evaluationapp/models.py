@@ -21,9 +21,9 @@ class Evaluation(models.Model):
     pic2 = models.ImageField('游玩图片', max_length=100, null=True, blank=True, upload_to=upload_to)
     pic3 = models.ImageField('游玩图片', max_length=100, null=True, blank=True, upload_to=upload_to)
     price = models.DecimalField('消费', null=True, max_digits=6, decimal_places=2)
-    likes = models.IntegerField('点赞数', default=0)
+    usr_like = models.ManyToManyField(User, related_name='evaluation_like_set')
     hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='evaluation_set')
     time = models.DateTimeField('时间', default=datetime.now, null=True, blank=True)
 
     def __str__(self):
@@ -31,13 +31,16 @@ class Evaluation(models.Model):
 
     def tojson_base(self):
         e = {}
+        e['id'] = self.id
         e['rate'] = self.rate
         e['feeling'] = self.feeling
         e['pic1'] = str(self.pic1)
         e['pic2'] = str(self.pic2)
         e['pic3'] = str(self.pic3)
         e['price'] = self.price
-        e['likes'] = self.likes
+        e['usr_like'] = {'usr_like':[]}
+        for usr in self.usr_like.all():
+            e['usr_like']['usr_like'].append(usr.tojson_except_evaluation())
         e['time'] = self.time
         return e
 

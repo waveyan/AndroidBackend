@@ -4,6 +4,12 @@ from django.contrib.auth.models import AbstractUser
 from hotspotapp.models import HotSpot
 from activityapp.models import Activity
 
+import os
+
+
+def upload_to(instance, filename):
+    return os.path.join('pic', filename)
+
 
 class User(models.Model):
     name = models.CharField("昵称", max_length=50, default='')
@@ -12,7 +18,7 @@ class User(models.Model):
     gender = models.CharField("性别", max_length=6, null=True)
     address = models.CharField("地址", max_length=100, default="", null=True)
     telephone = models.CharField("电话", max_length=20, unique=True)
-    pic = models.ImageField("头像", default="pic/default.png", max_length=100, null=True)
+    pic = models.ImageField("头像", default="pic/default.png",upload_to=upload_to, max_length=100, null=True)
     introduction = models.CharField("简介", max_length=200, default="", null=True)
     email = models.EmailField("邮箱", max_length=100, unique=True, null=True)
     credit = models.IntegerField('信用值', default=100,null=True)
