@@ -35,13 +35,7 @@ class EvaluationBase(View):
     def post(self, request):
         access_token = request.META.get(ACCESS_TOKEN)
         hotspot_id = request.POST.get('hotspot_id')
-        action = request.POST.get('action')
-        if action == 'upload_pic':
-            evaluation_id = request.POST.get('instance_id')
-            evaluation = Evaluation.objects.filter(id=evaluation_id).first()
-            evaluation_form = EvaluationForm(request.POST, request.FILES, instance=evaluation)
-        else:
-            evaluation_form = EvaluationForm(request.POST, request.FILES)
+        evaluation_form = EvaluationForm(request.POST, request.FILES)
         try:
             if evaluation_form.is_valid():
                 evaluation = evaluation_form.save(commit=False)

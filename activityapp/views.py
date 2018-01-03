@@ -60,13 +60,7 @@ class ActivityBase(View):
     # 提交活動
     def post(self, request):
         hotspot_id = request.POST.get('hotspot_id')
-        activity_id = request.POST.get('instance_id')
-        action = request.POST.get('action')
-        if action == 'upload_pic':
-            activity = Activity.objects.filter(id=activity_id).first()
-            activity_form = ActivityForm(request.POST, request.FILES, instance=activity)
-        else:
-            activity_form = ActivityForm(request.POST, request.FILES)
+        activity_form = ActivityForm(request.POST, request.FILES)
         try:
             if activity_form.is_valid():
                 if hotspot_id:
@@ -76,12 +70,12 @@ class ActivityBase(View):
                 else:
                     activity_form.save()
                 id = Activity.objects.latest('id').id
-                msg = message(status='success', msg='操作活动成功', instance_Id=id)
+                msg = message(status='success', msg='添加活动成功', instance_Id=id)
                 return JsonResponse(msg)
             else:
-                msg = message(msg='操作活动失败')
+                msg = message(msg='添加活动失败')
                 return JsonResponse(msg)
         except Exception as e:
-            print('操作活动', e)
-            msg = message(msg='操作活动失败')
+            print('添加活动', e)
+            msg = message(msg='添加活动失败')
             return JsonResponse(msg)
