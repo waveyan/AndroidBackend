@@ -23,8 +23,8 @@ class District(models.Model):
     city = models.CharField("所在城市", max_length=50)
     introduction = models.TextField('介绍', max_length=500)
     pic = models.ImageField('图片', max_length=50, upload_to=d_upload_to)
-    longitude = models.BigIntegerField('经度', null=True)
-    latitude = models.BigIntegerField('纬度', null=True)
+    longitude = models.CharField('经度', max_length=20, null=True)
+    latitude = models.CharField('纬度', max_length=20, null=True)
 
     def tojson(self):
         d = {}
@@ -120,6 +120,7 @@ class Route(models.Model):
 
     def tojson(self):
         r = {}
+        r['id']=self.id
         r['title'] = self.title
         r['time'] = self.time
         r['introduce'] = self.introduce
