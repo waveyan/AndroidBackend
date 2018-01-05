@@ -2,7 +2,7 @@ from django.db.utils import IntegrityError
 from django.views.generic.base import View
 from django.http import JsonResponse, QueryDict
 from django.views.decorators.http import require_http_methods
-
+from userapp.forms import UserForm
 from userapp.models import User
 from androidbackend.utils import message, make_security, handle_uploaded_file
 from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT

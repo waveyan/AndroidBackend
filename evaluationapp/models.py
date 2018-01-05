@@ -15,15 +15,15 @@ def upload_to(instance, filename):
 
 
 class Evaluation(models.Model):
-    rate = models.IntegerField('评分', default=0)
+    rate = models.CharField('评分',max_length=5, default=0)
     feeling = models.CharField('心情', max_length=200)
     pic1 = models.ImageField('游玩图片', max_length=100, null=True, blank=True, upload_to=upload_to)
     pic2 = models.ImageField('游玩图片', max_length=100, null=True, blank=True, upload_to=upload_to)
     pic3 = models.ImageField('游玩图片', max_length=100, null=True, blank=True, upload_to=upload_to)
-    price = models.DecimalField('消费', null=True, max_digits=6, decimal_places=2)
-    usr_like = models.ManyToManyField(User, related_name='evaluation_like_set')
-    hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='evaluation_set')
+    price = models.CharField('消费', max_length=20,null=True)
+    usr_like = models.ManyToManyField(User, related_name='evaluation_like_set',null=True)
+    hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE,null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='evaluation_set',null=True)
     time = models.DateTimeField('时间', default=datetime.now, null=True, blank=True)
 
     def __str__(self):

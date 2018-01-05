@@ -10,6 +10,7 @@ from .forms import EvaluationForm
 from androidbackend.utils import message
 
 
+
 class EvaluationBase(View):
     # 获取评论
     def get(self, request):
@@ -20,7 +21,15 @@ class EvaluationBase(View):
             from collections import defaultdict
             evaluations = defaultdict(lambda: [])
             for x in user.evaluation_set.all():
-                evaluations['evaluations'].append(x.tojson())
+                evaluations['evaluation'].append(x.tojson())
+            return JsonResponse(evaluations)
+        elif action == 'hotspot':
+            hotspot_id = request.GET.get('hotspot_id')
+            hotspot = HotSpot.objects.filter(id=hotspot_id).first()
+            from collections import defaultdict
+            evaluations = defaultdict(lambda: [])
+            for x in hotspot.evaluation_set.all():
+                evaluations['evaluation'].append(x.tojson())
             return JsonResponse(evaluations)
         else:
             id = request.POST.get('hotspot_id')
@@ -28,7 +37,7 @@ class EvaluationBase(View):
             from collections import defaultdict
             evaluations = defaultdict(lambda: [])
             for x in hotspot.evaluation_set.all():
-                evaluations['evaluations'].append(x.tojson())
+                evaluations['evaluation'].append(x.tojson())
             return JsonResponse(evaluations)
 
     # 发表评论
@@ -85,5 +94,7 @@ def get_evaluation_from_my_follow(request):
     for follow in user.following.all():
         for item in follow.evaluation_set.all():
             evaluation_list.append(item.tojson())
+    for x in user.evaluation_set.all():
+        evaluation_list.append(x.tojson())
     evaluation_list = sorted(evaluation_list, key=lambda x: x['time'], reverse=True)
     return JsonResponse({'evaluation': evaluation_list})

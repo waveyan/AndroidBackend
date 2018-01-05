@@ -61,7 +61,7 @@ class HotSpot(models.Model):
     likes = models.IntegerField("点赞数", default=0)
     type = models.CharField('类型', max_length=50)
     arrived = models.IntegerField('签到数', default=0)
-    district = models.ForeignKey(District, on_delete=models.DO_NOTHING, null=True)
+    district = models.ForeignKey(District, on_delete=models.DO_NOTHING, null=True,blank=True)
     longitude = models.CharField('经度', max_length=20, null=True)
     latitude = models.CharField('纬度', max_length=20, null=True)
 
@@ -113,7 +113,7 @@ class HotSpot(models.Model):
 # 线路
 class Route(models.Model):
     title = models.CharField('标题', max_length=100)
-    time = models.IntegerField('用时')
+    time = models.DateTimeField('时间', null=True, blank=True)
     introduce = models.TextField('简介', max_length=500)
     hotspot = models.ManyToManyField(HotSpot)
     user = models.CharField('用户账号', max_length=50)

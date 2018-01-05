@@ -42,7 +42,12 @@ class HotSpotBase(View):
                         break
                 # 活动
                 for activity in item.activity_set.all():
-                    item_json['activity']['activity'].append(activity.tojson_except_hotspot())
+                    activity_json=activity.tojson_except_hotspot()
+                    for a in user.favour_activity.all():
+                        if a.id == activity.id:
+                            activity_json['isfavour'] = 1
+                            break
+                    item_json['activity']['activity'].append(activity_json)
                 # 评价
                 for evaluation in item.evaluation_set.all():
                     item_json['evaluation']['evaluation'].append(evaluation.tojson_except_hotspot())
@@ -105,6 +110,19 @@ def create_index(request):
                 if f.id == hs.id:
                     hs_json['isfavour'] = 1
                     break
+            hs_json['activity'] = {'activity': []}
+            hs_json['evaluation'] = {'evaluation': []}
+            # 活动
+            # for activity in hs.activity_set.all():
+            #     activity_json=activity.tojson_except_hotspot()
+            #     for a in user.favour_activity.all():
+            #         if a.id == activity.id:
+            #             activity_json['isfavour'] = 1
+            #             break
+            #     hs_json['activity']['activity'].append(activity_json)
+            # # 评价
+            # for evaluation in hs.evaluation_set.all():
+            #     hs_json['evaluation']['evaluation'].append(evaluation.tojson_except_hotspot())
             h.append(hs_json)
         district_json['hotspot'] = {'hotspot': h}
         d.append(district_json)
