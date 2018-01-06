@@ -4,7 +4,7 @@ from hotspotapp.models import HotSpot, District, Route
 
 
 class HotspotAdmin(admin.ModelAdmin):
-    list_display = ['name', 'englishname']
+    list_display = ['name', 'englishname','district','type']
     # list_filter=['created_time']
 
 

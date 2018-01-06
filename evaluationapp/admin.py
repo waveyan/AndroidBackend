@@ -4,7 +4,7 @@ from evaluationapp.models import Evaluation, Comment
 
 
 class EvaluationAdmin(admin.ModelAdmin):
-    list_display = ['feeling', 'time']
+    list_display = ['feeling', 'time','user']
     # list_filter=['created_time']
 
 

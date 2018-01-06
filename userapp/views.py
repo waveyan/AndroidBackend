@@ -8,6 +8,7 @@ from androidbackend.utils import message, make_security, handle_uploaded_file
 from androidbackend.settings import ACCESS_TOKEN, MEDIA_ROOT
 from hotspotapp.models import HotSpot
 from activityapp.models import Activity
+from django.db.models import Q
 
 import os
 
@@ -20,6 +21,13 @@ class UserManager(View):
         if action == 'detail':
             user_id = request.GET.get('usr_id')
             user = User.objects.filter(pk=user_id).first()
+        elif action == 'search':
+            u = {'user': []}
+            key = request.GET.get('key', '').replace("'",'').replace('"','').replace('.','').replace(';',"")
+            users = User.objects.filter(name__contains=key).all()
+            for user in users:
+                u['user'].append(user.tojson())
+            return JsonResponse(u)
         else:
             user = User.objects.filter(access_token=access_token).first()
         return JsonResponse(user.tojson())
@@ -37,10 +45,10 @@ class UserManager(View):
             password = make_security(password.encode('utf8'))
             user = User.objects.filter(telephone=telephone, password=password).first()
             if user:
-                user_json=user.tojson()
-                user_json['msg']="登录成功！"
-                user_json['status']='success'
-                user_json['access_token']=user.access_token
+                user_json = user.tojson()
+                user_json['msg'] = "登录成功！"
+                user_json['status'] = 'success'
+                user_json['access_token'] = user.access_token
                 return JsonResponse(user_json)
             else:
                 msg = message(msg='账户或密码错误!')
@@ -67,7 +75,7 @@ class UserManager(View):
                 name = request.POST.get('name', '')
                 user_form = UserForm(request.POST, request.FILES, instance=user)
                 if user_form.is_valid():
-                   user_form.save()
+                    user_form.save()
                 msg = message(msg='修改成功！', status='success')
                 return JsonResponse(msg)
         msg = message(msg='请求信息不全！')
@@ -81,10 +89,10 @@ class UserManager(View):
         access_token = request.META.get(ACCESS_TOKEN, '')
         # 关注好友
         if action == 'follow':
-            follow_id = body.get('follow_id')
+            follow_tel = body.get('follow_tel')
             msg = message(msg='操作失败')
-            if access_token and follow_id:
-                follow_user = User.objects.filter(pk=follow_id).first()
+            if access_token and follow_tel:
+                follow_user = User.objects.filter(telephone=follow_tel).first()
                 user = User.objects.filter(access_token=access_token).first()
                 is_following = False
                 for x in user.following.all():
@@ -144,9 +152,9 @@ def get_my_follow(request):
     from collections import defaultdict
     follow = defaultdict(lambda: [])
     for fans in user.following.all():
-        follow['following'].append(fans.tojson())
+        follow['following'].append(fans.tojson_except_evaluation())
     for follower in user.follower.all():
-        follow['follower'].append(follower.tojson())
+        follow['follower'].append(follower.tojson_except_evaluation())
     return JsonResponse(follow)
 
 

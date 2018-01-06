@@ -21,7 +21,7 @@ class Evaluation(models.Model):
     pic2 = models.ImageField('游玩图片', max_length=100, null=True, blank=True, upload_to=upload_to)
     pic3 = models.ImageField('游玩图片', max_length=100, null=True, blank=True, upload_to=upload_to)
     price = models.CharField('消费', max_length=20,null=True)
-    usr_like = models.ManyToManyField(User, related_name='evaluation_like_set',null=True)
+    usr_like = models.ManyToManyField(User, related_name='evaluation_like_set')
     hotspot = models.ForeignKey(HotSpot, on_delete=models.CASCADE,null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='evaluation_set',null=True)
     time = models.DateTimeField('时间', default=datetime.now, null=True, blank=True)
@@ -46,13 +46,15 @@ class Evaluation(models.Model):
 
     def tojson(self):
         e = self.tojson_base()
-        e['hotspot'] = self.hotspot.tojson()
+        if self.hotspot:
+            e['hotspot'] = self.hotspot.tojson()
         e['user'] = self.user.tojson_except_evaluation()
         return e
 
     def tojson_except_user(self):
         e = self.tojson_base()
-        e['hotspot'] = self.hotspot.tojson()
+        if self.hotspot:
+            e['hotspot'] = self.hotspot.tojson()
         return e
 
     def tojson_except_hotspot(self):

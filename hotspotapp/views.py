@@ -5,6 +5,7 @@ from hotspotapp.models import HotSpot, District, Route
 from userapp.models import User
 from androidbackend.utils import message
 from androidbackend.settings import ACCESS_TOKEN
+from django.views.decorators.http import require_http_methods
 
 
 class HotSpotBase(View):
@@ -40,7 +41,7 @@ class HotSpotBase(View):
                     if item.id == hs.id:
                         item_json['isfavour'] = 1
                         break
-                # 活动
+                # # 活动
                 for activity in item.activity_set.all():
                     activity_json=activity.tojson_except_hotspot()
                     for a in user.favour_activity.all():
@@ -98,6 +99,7 @@ class HotSpotBase(View):
 
 
 # 创建首页
+@require_http_methods(['GET'])
 def create_index(request):
     user = User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
     d = []
@@ -112,17 +114,6 @@ def create_index(request):
                     break
             hs_json['activity'] = {'activity': []}
             hs_json['evaluation'] = {'evaluation': []}
-            # 活动
-            # for activity in hs.activity_set.all():
-            #     activity_json=activity.tojson_except_hotspot()
-            #     for a in user.favour_activity.all():
-            #         if a.id == activity.id:
-            #             activity_json['isfavour'] = 1
-            #             break
-            #     hs_json['activity']['activity'].append(activity_json)
-            # # 评价
-            # for evaluation in hs.evaluation_set.all():
-            #     hs_json['evaluation']['evaluation'].append(evaluation.tojson_except_hotspot())
             h.append(hs_json)
         district_json['hotspot'] = {'hotspot': h}
         d.append(district_json)
@@ -158,3 +149,31 @@ class RouteBase(View):
             route.hotspot.add(hs)
         msg = message(msg='提交成功！', status='success')
         return JsonResponse(msg)
+
+@require_http_methods(['GET'])
+def search(request):
+    key=request.GET.get('key','').replace("'",'').replace('"','').replace('.','').replace(';',"")
+    user=User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
+    all_hs_dict = {}
+    all_hs_dict['hotspot'] = []
+    for item in HotSpot.objects.filter(name__contains=key).all():
+        item_json = item.tojson()
+        item_json['activity'] = {'activity': []}
+        item_json['evaluation'] = {'evaluation': []}
+        for hs in user.favour_hotspot.all():
+            if item.id == hs.id:
+                item_json['isfavour'] = 1
+                break
+        # 活动
+        # for activity in item.activity_set.all():
+        #     activity_json = activity.tojson_except_hotspot()
+        #     for a in user.favour_activity.all():
+        #         if a.id == activity.id:
+        #             activity_json['isfavour'] = 1
+        #             break
+        #     item_json['activity']['activity'].append(activity_json)
+        # 评价
+        # for evaluation in item.evaluation_set.all():
+        #     item_json['evaluation']['evaluation'].append(evaluation.tojson_except_hotspot())
+        all_hs_dict['hotspot'].append(item_json)
+    return JsonResponse(all_hs_dict)

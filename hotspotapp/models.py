@@ -33,7 +33,7 @@ class District(models.Model):
         d['city'] = self.city
         d['introduction'] = self.introduction
         d['pic'] = str(self.pic)
-        d['hotspot'] = []
+        d['hotspot'] = {'hotspot':[]}
         d['longitude'] = self.longitude
         d['latitude'] = self.latitude
         return d
@@ -92,7 +92,8 @@ class HotSpot(models.Model):
         hs['longitude'] = self.longitude
         hs['latitude'] = self.latitude
         hs['isfavour'] = 0
-        hs['district'] = self.district.tojson()
+        if self.district:
+            hs['district'] = self.district.tojson()
         return hs
 
     # def tojson_all(self):

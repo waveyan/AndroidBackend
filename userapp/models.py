@@ -43,7 +43,7 @@ class User(models.Model):
         j['email'] = self.email
         j['credit'] = self.credit
         j['evaluation']={'evaluation':[]}
-        for x in self.evaluation_set.all():
+        for x in self.evaluation_set.order_by('-time').all():
             j['evaluation']['evaluation'].append(x.tojson_except_user())
         return j
 

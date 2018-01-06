@@ -10,17 +10,20 @@ from .forms import EvaluationForm
 from androidbackend.utils import message
 
 
-
 class EvaluationBase(View):
     # 获取评论
     def get(self, request):
         access_token = request.META.get(ACCESS_TOKEN)
         action = request.GET.get('action')
         if action == 'person':
-            user = User.objects.filter(access_token=access_token).first()
+            user_tel = request.GET.get('user_tel')
+            if user_tel:
+                user = User.objects.filter(telephone=user_tel).first()
+            else:
+                user = User.objects.filter(access_token=access_token).first()
             from collections import defaultdict
             evaluations = defaultdict(lambda: [])
-            for x in user.evaluation_set.all():
+            for x in user.evaluation_set.order_by('-time').all():
                 evaluations['evaluation'].append(x.tojson())
             return JsonResponse(evaluations)
         elif action == 'hotspot':
