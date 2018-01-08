@@ -48,7 +48,10 @@ class ActivityBase(View):
             return JsonResponse(all_act)
         else:
             num = request.GET.get('num')
-            activities = Activity.objects.all().order_by('-id')
+            city = request.GET.get('cityname')
+            if not city:
+                city='广州'
+            activities = Activity.objects.filter(hotspot__district__city=city).all().order_by('-id')
             if num:
                 activities = activities[:int(num)]
             all_act = {}

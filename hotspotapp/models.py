@@ -17,10 +17,35 @@ def d_upload_to(instance, filename):
     return os.path.join('district', str(id), filename)
 
 
+def c_upload_to(instance, filename):
+    # id = instance.id
+    # if not instance:
+    #     id = HotSpot.objects.latest('id').id + 1
+    return os.path.join('city', filename)
+
+
+class City(models.Model):
+    englishname=models.CharField("英文名称",max_length=100,null=True)
+    name = models.CharField('城市名称', max_length=50)
+    pic = models.ImageField('图片', upload_to=c_upload_to)
+
+    def __str__(self):
+        return self.name
+
+    def tojson(self):
+        c = {}
+        c['id']=self.id
+        c['englishname']=self.englishname
+        c['name'] = self.name
+        c['pic'] = str(self.pic)
+        return c
+
+
 class District(models.Model):
     name = models.CharField("区域", max_length=50)
     englishName = models.CharField('英文名字', max_length=100)
     city = models.CharField("所在城市", max_length=50)
+    city_obj = models.ForeignKey(City, null=True, on_delete=models.CASCADE)
     introduction = models.TextField('介绍', max_length=500)
     pic = models.ImageField('图片', max_length=50, upload_to=d_upload_to)
     longitude = models.CharField('经度', max_length=20, null=True)
@@ -33,7 +58,7 @@ class District(models.Model):
         d['city'] = self.city
         d['introduction'] = self.introduction
         d['pic'] = str(self.pic)
-        d['hotspot'] = {'hotspot':[]}
+        d['hotspot'] = {'hotspot': []}
         d['longitude'] = self.longitude
         d['latitude'] = self.latitude
         return d
@@ -61,7 +86,7 @@ class HotSpot(models.Model):
     likes = models.IntegerField("点赞数", default=0)
     type = models.CharField('类型', max_length=50)
     arrived = models.IntegerField('签到数', default=0)
-    district = models.ForeignKey(District, on_delete=models.DO_NOTHING, null=True,blank=True)
+    district = models.ForeignKey(District, on_delete=models.DO_NOTHING, null=True, blank=True)
     longitude = models.CharField('经度', max_length=20, null=True)
     latitude = models.CharField('纬度', max_length=20, null=True)
 
@@ -121,7 +146,7 @@ class Route(models.Model):
 
     def tojson(self):
         r = {}
-        r['id']=self.id
+        r['id'] = self.id
         r['title'] = self.title
         r['time'] = self.time
         r['introduce'] = self.introduce

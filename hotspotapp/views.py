@@ -1,7 +1,7 @@
 from django.views.generic.base import View
 from django.http import JsonResponse, QueryDict
 
-from hotspotapp.models import HotSpot, District, Route
+from hotspotapp.models import HotSpot, District, Route, City
 from userapp.models import User
 from androidbackend.utils import message
 from androidbackend.settings import ACCESS_TOKEN
@@ -31,9 +31,17 @@ class HotSpotBase(View):
                     break
             return JsonResponse(hs_json)
         else:
+            what = request.GET.get('what')
+            city = request.GET.get('cityname')
+            if not city:
+                city = '广州'
+            if what:
+                hses=HotSpot.objects.filter(type=what).filter(district__city=city).all()
+            else:
+                hses=HotSpot.objects.filter(district__city=city).all()
             all_hs_dict = {}
             all_hs_dict['hotspot'] = []
-            for item in HotSpot.objects.all():
+            for item in hses:
                 item_json = item.tojson()
                 item_json['activity'] = {'activity': []}
                 item_json['evaluation'] = {'evaluation': []}
@@ -43,7 +51,7 @@ class HotSpotBase(View):
                         break
                 # # 活动
                 for activity in item.activity_set.all():
-                    activity_json=activity.tojson_except_hotspot()
+                    activity_json = activity.tojson_except_hotspot()
                     for a in user.favour_activity.all():
                         if a.id == activity.id:
                             activity_json['isfavour'] = 1
@@ -98,12 +106,24 @@ class HotSpotBase(View):
             return JsonResponse(msg)
 
 
+# 获取城市列表
+@require_http_methods(['GET'])
+def get_cities(request):
+    city = {'city': []}
+    for x in City.objects.order_by('-id').all():
+        city['city'].append(x.tojson())
+    return JsonResponse(city)
+
+
 # 创建首页
 @require_http_methods(['GET'])
 def create_index(request):
     user = User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
+    city=request.GET.get('cityname')
+    if not city:
+        city='广州'
     d = []
-    for district in District.objects.all():
+    for district in District.objects.filter(city=city).all():
         h = []
         district_json = district.tojson()
         for hs in district.hotspot_set.all():
@@ -150,10 +170,11 @@ class RouteBase(View):
         msg = message(msg='提交成功！', status='success')
         return JsonResponse(msg)
 
+
 @require_http_methods(['GET'])
 def search(request):
-    key=request.GET.get('key','').replace("'",'').replace('"','').replace('.','').replace(';',"")
-    user=User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
+    key = request.GET.get('key', '').replace("'", '').replace('"', '').replace('.', '').replace(';', "")
+    user = User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
     all_hs_dict = {}
     all_hs_dict['hotspot'] = []
     for item in HotSpot.objects.filter(name__contains=key).all():
