@@ -23,7 +23,7 @@ class UserManager(View):
             user = User.objects.filter(pk=user_id).first()
         elif action == 'search':
             u = {'user': []}
-            key = request.GET.get('key', '').replace("'",'').replace('"','').replace('.','').replace(';',"")
+            key = request.GET.get('key', '').replace("'", '').replace('"', '').replace('.', '').replace(';', "")
             users = User.objects.filter(name__contains=key).all()
             for user in users:
                 u['user'].append(user.tojson())
@@ -45,7 +45,7 @@ class UserManager(View):
             password = make_security(password.encode('utf8'))
             user = User.objects.filter(telephone=telephone, password=password).first()
             if user:
-                user_json = user.tojson()
+                user_json = user.tojson_except_evaluation()
                 user_json['msg'] = "登录成功！"
                 user_json['status'] = 'success'
                 user_json['access_token'] = user.access_token
@@ -73,9 +73,13 @@ class UserManager(View):
             if access_token:
                 user = User.objects.filter(access_token=access_token).first()
                 name = request.POST.get('name', '')
-                user_form = UserForm(request.POST, request.FILES, instance=user)
-                if user_form.is_valid():
-                    user_form.save()
+                if name:
+                    user.name = name
+                    user.save()
+                else:
+                    user_form = UserForm(request.POST, request.FILES, instance=user)
+                    if user_form.is_valid():
+                        user_form.save()
                 msg = message(msg='修改成功！', status='success')
                 return JsonResponse(msg)
         msg = message(msg='请求信息不全！')
