@@ -89,6 +89,7 @@ class EvaluationBase(View):
         pass
 
 
+# 动态
 @require_http_methods(['GET'])
 def get_evaluation_from_my_follow(request):
     access_token = request.META.get(ACCESS_TOKEN)
@@ -101,3 +102,14 @@ def get_evaluation_from_my_follow(request):
         evaluation_list.append(x.tojson())
     evaluation_list = sorted(evaluation_list, key=lambda x: x['time'], reverse=True)
     return JsonResponse({'evaluation': evaluation_list})
+
+
+# 商圈信息
+@require_http_methods(['GET'])
+def get_evaluation_from_district(request):
+    district_name = request.GET.get('districtname')
+    evaluations = Evaluation.objects.filter(hotspot__district__name=district_name).order_by('-time').all()
+    evaluation = {'evaluation': []}
+    for x in evaluations:
+        evaluation['evaluation'].append(x.tojson())
+    return JsonResponse(evaluation)

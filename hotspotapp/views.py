@@ -148,10 +148,10 @@ class RouteBase(View):
         route = {'route': []}
         if action == 'person':
             user = User.objects.filter(access_token=access_token).first()
-            for r in Route.objects.filter(user=user.telephone).all():
+            for r in Route.objects.filter(user=user.telephone).order_by('-time').all():
                 route['route'].append(r.tojson())
         else:
-            for r in Route.objects.all():
+            for r in Route.objects.order_by('-time').all():
                 route['route'].append(r.tojson())
         return JsonResponse(route)
 
@@ -174,10 +174,15 @@ class RouteBase(View):
 @require_http_methods(['GET'])
 def search(request):
     key = request.GET.get('key', '').replace("'", '').replace('"', '').replace('.', '').replace(';', "")
+    cityname=request.GET.get('cityname',None)
+    if cityname:
+        hses=HotSpot.objects.filter(district__city=cityname).filter(name__contains=key).all()
+    else:
+        hses=HotSpot.objects.filter(name__contains=key).all()
     user = User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
     all_hs_dict = {}
     all_hs_dict['hotspot'] = []
-    for item in HotSpot.objects.filter(name__contains=key).all():
+    for item in hses:
         item_json = item.tojson()
         item_json['activity'] = {'activity': []}
         item_json['evaluation'] = {'evaluation': []}
@@ -185,16 +190,5 @@ def search(request):
             if item.id == hs.id:
                 item_json['isfavour'] = 1
                 break
-        # 活动
-        # for activity in item.activity_set.all():
-        #     activity_json = activity.tojson_except_hotspot()
-        #     for a in user.favour_activity.all():
-        #         if a.id == activity.id:
-        #             activity_json['isfavour'] = 1
-        #             break
-        #     item_json['activity']['activity'].append(activity_json)
-        # 评价
-        # for evaluation in item.evaluation_set.all():
-        #     item_json['evaluation']['evaluation'].append(evaluation.tojson_except_hotspot())
         all_hs_dict['hotspot'].append(item_json)
     return JsonResponse(all_hs_dict)
