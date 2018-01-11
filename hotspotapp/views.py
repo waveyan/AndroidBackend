@@ -36,9 +36,9 @@ class HotSpotBase(View):
             if not city:
                 city = '广州'
             if what:
-                hses=HotSpot.objects.filter(type=what).filter(district__city=city).all()
+                hses = HotSpot.objects.filter(type=what).filter(district__city=city).all()
             else:
-                hses=HotSpot.objects.filter(district__city=city).all()
+                hses = HotSpot.objects.filter(district__city=city).all()
             all_hs_dict = {}
             all_hs_dict['hotspot'] = []
             for item in hses:
@@ -119,22 +119,24 @@ def get_cities(request):
 @require_http_methods(['GET'])
 def create_index(request):
     user = User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
-    city=request.GET.get('cityname')
+    city = request.GET.get('cityname')
     if not city:
-        city='广州'
+        city = '广州'
     d = []
     for district in District.objects.filter(city=city).all():
         h = []
         district_json = district.tojson()
-        for hs in district.hotspot_set.all():
-            hs_json = hs.tojson()
-            for f in user.favour_hotspot.all():
-                if f.id == hs.id:
-                    hs_json['isfavour'] = 1
-                    break
-            hs_json['activity'] = {'activity': []}
-            hs_json['evaluation'] = {'evaluation': []}
-            h.append(hs_json)
+        hses = district.hotspot_set.all()
+        if hses.count() >= 6:
+            for hs in hses[:6]:
+                hs_json = hs.tojson()
+                for f in user.favour_hotspot.all():
+                    if f.id == hs.id:
+                        hs_json['isfavour'] = 1
+                        break
+                hs_json['activity'] = {'activity': []}
+                hs_json['evaluation'] = {'evaluation': []}
+                h.append(hs_json)
         district_json['hotspot'] = {'hotspot': h}
         d.append(district_json)
     return JsonResponse({'district': d})
@@ -174,11 +176,11 @@ class RouteBase(View):
 @require_http_methods(['GET'])
 def search(request):
     key = request.GET.get('key', '').replace("'", '').replace('"', '').replace('.', '').replace(';', "")
-    cityname=request.GET.get('cityname',None)
+    cityname = request.GET.get('cityname', None)
     if cityname:
-        hses=HotSpot.objects.filter(district__city=cityname).filter(name__contains=key).all()
+        hses = HotSpot.objects.filter(district__city=cityname).filter(name__contains=key).all()
     else:
-        hses=HotSpot.objects.filter(name__contains=key).all()
+        hses = HotSpot.objects.filter(name__contains=key).all()
     user = User.objects.filter(access_token=request.META.get(ACCESS_TOKEN)).first()
     all_hs_dict = {}
     all_hs_dict['hotspot'] = []

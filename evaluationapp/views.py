@@ -31,7 +31,7 @@ class EvaluationBase(View):
             hotspot = HotSpot.objects.filter(id=hotspot_id).first()
             from collections import defaultdict
             evaluations = defaultdict(lambda: [])
-            for x in hotspot.evaluation_set.all():
+            for x in hotspot.evaluation_set.order_by('-time').all():
                 evaluations['evaluation'].append(x.tojson())
             return JsonResponse(evaluations)
         else:
@@ -39,7 +39,7 @@ class EvaluationBase(View):
             hotspot = HotSpot.objects.filter(id=id).first()
             from collections import defaultdict
             evaluations = defaultdict(lambda: [])
-            for x in hotspot.evaluation_set.all():
+            for x in hotspot.evaluation_set.order_by('-time').all():
                 evaluations['evaluation'].append(x.tojson())
             return JsonResponse(evaluations)
 

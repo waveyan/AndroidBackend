@@ -50,7 +50,7 @@ class ActivityBase(View):
             num = request.GET.get('num')
             city = request.GET.get('cityname')
             if not city:
-                city='广州'
+                city = '广州'
             activities = Activity.objects.filter(hotspot__district__city=city).all().order_by('-id')
             if num:
                 activities = activities[:int(num)]
